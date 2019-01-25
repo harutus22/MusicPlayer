@@ -13,6 +13,7 @@ import android.widget.Toast;
 
 import com.example.apple.musicplayer.song.Song;
 
+import java.util.ArrayList;
 import java.util.List;
 
 
@@ -27,10 +28,10 @@ public class PlayMusicService  extends IntentService {
 
     private MediaPlayer mediaPlayer;
     private int playbackLength;
-    public static boolean isPlaying = false;
-    public static boolean isPaused = false;
+    private boolean isPlaying = false;
     private Messenger messenger = new Messenger(new PlayerHandler());
-    private List<Song> musicList;
+    private ArrayList<Song> musicList;
+    private int previosTrack;
 
     @Nullable
     @Override
@@ -52,7 +53,7 @@ public class PlayMusicService  extends IntentService {
 
     }
 
-    class PlayerHandler extends Handler {
+     class PlayerHandler extends Handler {
         @Override
         public void handleMessage(Message msg) {
             switch (msg.what) {
@@ -60,16 +61,18 @@ public class PlayMusicService  extends IntentService {
                     play(msg.arg1);
                     break;
                 case PAUSE_MUSIC:
+                    previosTrack = msg.arg1;
                     pause();
                     break;
                 case SET_SONG_LIST:
-                    setMusicList((List<Song>) msg.obj);
+                    setMusicList((ArrayList<Song>)msg.obj);
                     break;
                 case NEXT_SONG:
                     nextSong(msg.arg1);
                     break;
                 case PREVIOUS_SONG:
                     previousSong(msg.arg1);
+                    break;
                 case CHOOSE_SONG:
                     chooseSong(msg.arg1);
                     break;
@@ -79,13 +82,16 @@ public class PlayMusicService  extends IntentService {
     }
 
     private void chooseSong(int location) {
+        if(mediaPlayer != null) {
+            mediaPlayer.release();
+        }
         mediaPlayer = MediaPlayer.create(getApplicationContext(), Uri.parse(musicList.get(location).getLocation()));
     }
 
     private void previousSong(int location) {
         mediaPlayer.release();
         mediaPlayer = MediaPlayer.create(getApplicationContext(), Uri.parse(musicList.get(location).getLocation()));
-        if (!isPaused) {
+        if (isPlaying) {
             mediaPlayer.start();
         }
     }
@@ -93,7 +99,7 @@ public class PlayMusicService  extends IntentService {
     private void nextSong(int location) {
         mediaPlayer.release();
         mediaPlayer = MediaPlayer.create(getApplicationContext(), Uri.parse(musicList.get(location).getLocation()));
-        if (!isPaused) {
+        if (isPlaying) {
             mediaPlayer.start();
         }
     }
@@ -102,25 +108,18 @@ public class PlayMusicService  extends IntentService {
         if (mediaPlayer == null) {
             Toast.makeText(getBaseContext(), "Choose a song to play", Toast.LENGTH_LONG).show();
             //TODO add handler to  mainActivity to not change the icon, while song is not selected
-        } else if (isPaused && !isPlaying) {
-            if (mediaPlayer.getAudioSessionId() == location) {
+        } else if (!isPlaying) {
+            if (previosTrack == location) {
                 mediaPlayer.seekTo(playbackLength);
                 mediaPlayer.start();
             }
-            else{
+            else {
                 mediaPlayer.release();
                 mediaPlayer = MediaPlayer.create(getApplicationContext(), Uri.parse(musicList.get(location).getLocation()));
                 mediaPlayer.start();
             }
             isPlaying = true;
-            isPaused = false;
-        } else if (!isPaused && !isPlaying) {
-            mediaPlayer.release();
-            mediaPlayer = MediaPlayer.create(getApplicationContext(), Uri.parse(musicList.get(location).getLocation()));
-            mediaPlayer.start();
-            isPlaying = true;
-        }
-        else if (!isPaused){
+        } else {
             mediaPlayer.release();
             mediaPlayer = MediaPlayer.create(getApplicationContext(), Uri.parse(musicList.get(location).getLocation()));
             mediaPlayer.start();
@@ -132,12 +131,11 @@ public class PlayMusicService  extends IntentService {
         if(mediaPlayer != null){
             mediaPlayer.pause();
             playbackLength = mediaPlayer.getCurrentPosition();
-            isPaused = true;
             isPlaying = false;
         }
     }
 
-    public void setMusicList(List<Song> musicList) {
+    public void setMusicList(ArrayList<Song> musicList) {
         this.musicList = musicList;
     }
 }

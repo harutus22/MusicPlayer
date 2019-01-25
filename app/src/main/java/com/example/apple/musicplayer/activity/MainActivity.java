@@ -54,11 +54,9 @@ public class MainActivity extends AppCompatActivity {
         public void onItemSelected(Song song) {
             location = song.getId();
             if(!isPlaying){
-                play.setImageDrawable(getDrawable(R.mipmap.ic_play_foreground));
                 sendMessage(PlayMusicService.CHOOSE_SONG, location);
             }
             else{
-                play.setImageDrawable(getDrawable(R.mipmap.ic_pause_foreground));
                 sendMessage(PlayMusicService.PLAY_MUSIC, location);
             }
         }
@@ -190,7 +188,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void previousSong() {
-        location--;
+        --location;
         if(location < 0) {
             location = songList.size() - 1;
         }
@@ -198,7 +196,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void nextSong() {
-        location++;
+        ++location;
         if(location >= songList.size()) {
             location = 0;
         }
