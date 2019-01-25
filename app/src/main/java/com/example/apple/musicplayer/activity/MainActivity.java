@@ -194,9 +194,7 @@ public class MainActivity extends AppCompatActivity {
         if(location < 0) {
             location = songList.size() - 1;
         }
-        if(PlayMusicService.isPaused){
-            sendMessage(PlayMusicService.PREVIOUS_SONG, location);
-        }
+        sendMessage(PlayMusicService.PREVIOUS_SONG, location);
     }
 
     private void nextSong() {

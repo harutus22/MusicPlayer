@@ -31,7 +31,6 @@ public class PlayMusicService  extends IntentService {
     public static boolean isPaused = false;
     private Messenger messenger = new Messenger(new PlayerHandler());
     private List<Song> musicList;
-    private int songCheck;
 
     @Nullable
     @Override
@@ -56,7 +55,6 @@ public class PlayMusicService  extends IntentService {
     class PlayerHandler extends Handler {
         @Override
         public void handleMessage(Message msg) {
-            songCheck = msg.arg1;
             switch (msg.what) {
                 case PLAY_MUSIC:
                     play(msg.arg1);
@@ -102,19 +100,30 @@ public class PlayMusicService  extends IntentService {
 
     void play(int location) {
         if (mediaPlayer == null) {
-            Toast.makeText(getBaseContext(), "Choose the song to play", Toast.LENGTH_LONG).show();
+            Toast.makeText(getBaseContext(), "Choose a song to play", Toast.LENGTH_LONG).show();
+            //TODO add handler to  mainActivity to not change the icon, while song is not selected
         } else if (isPaused && !isPlaying) {
-            if (songCheck == location) {
+            if (mediaPlayer.getAudioSessionId() == location) {
                 mediaPlayer.seekTo(playbackLength);
                 mediaPlayer.start();
-                isPlaying = true;
-                isPaused = false;
             }
+            else{
+                mediaPlayer.release();
+                mediaPlayer = MediaPlayer.create(getApplicationContext(), Uri.parse(musicList.get(location).getLocation()));
+                mediaPlayer.start();
+            }
+            isPlaying = true;
+            isPaused = false;
         } else if (!isPaused && !isPlaying) {
             mediaPlayer.release();
             mediaPlayer = MediaPlayer.create(getApplicationContext(), Uri.parse(musicList.get(location).getLocation()));
             mediaPlayer.start();
             isPlaying = true;
+        }
+        else if (!isPaused){
+            mediaPlayer.release();
+            mediaPlayer = MediaPlayer.create(getApplicationContext(), Uri.parse(musicList.get(location).getLocation()));
+            mediaPlayer.start();
         }
     }
 
