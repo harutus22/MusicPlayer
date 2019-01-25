@@ -9,22 +9,29 @@ import android.os.IBinder;
 import android.os.Message;
 import android.os.Messenger;
 import android.support.annotation.Nullable;
+import android.widget.Toast;
 
 import com.example.apple.musicplayer.song.Song;
 
 import java.util.List;
 
-public class PlayMusicService  extends IntentService{
+
+public class PlayMusicService  extends IntentService {
 
     public static final int PLAY_MUSIC = 8;
     public static final int PAUSE_MUSIC = 7;
     public static final int SET_SONG_LIST = 6;
     public static final int NEXT_SONG = 9;
     public static final int PREVIOUS_SONG = 10;
+    public static final int CHOOSE_SONG = 11;
 
     private MediaPlayer mediaPlayer;
+    private int playbackLength;
+    public static boolean isPlaying = false;
+    public static boolean isPaused = false;
     private Messenger messenger = new Messenger(new PlayerHandler());
     private List<Song> musicList;
+    private int songCheck;
 
     @Nullable
     @Override
@@ -37,7 +44,7 @@ public class PlayMusicService  extends IntentService{
         return super.onUnbind(intent);
     }
 
-    public PlayMusicService(){
+    public PlayMusicService() {
         super(PlayMusicService.class.getName());
     }
 
@@ -49,6 +56,7 @@ public class PlayMusicService  extends IntentService{
     class PlayerHandler extends Handler {
         @Override
         public void handleMessage(Message msg) {
+            songCheck = msg.arg1;
             switch (msg.what) {
                 case PLAY_MUSIC:
                     play(msg.arg1);
@@ -64,39 +72,59 @@ public class PlayMusicService  extends IntentService{
                     break;
                 case PREVIOUS_SONG:
                     previousSong(msg.arg1);
+                case CHOOSE_SONG:
+                    chooseSong(msg.arg1);
                     break;
                 default:
             }
         }
     }
 
+    private void chooseSong(int location) {
+        mediaPlayer = MediaPlayer.create(getApplicationContext(), Uri.parse(musicList.get(location).getLocation()));
+    }
+
     private void previousSong(int location) {
         mediaPlayer.release();
         mediaPlayer = MediaPlayer.create(getApplicationContext(), Uri.parse(musicList.get(location).getLocation()));
-        mediaPlayer.start();
+        if (!isPaused) {
+            mediaPlayer.start();
+        }
     }
 
     private void nextSong(int location) {
         mediaPlayer.release();
         mediaPlayer = MediaPlayer.create(getApplicationContext(), Uri.parse(musicList.get(location).getLocation()));
-        mediaPlayer.start();
-    }
-
-    void play(int location){
-        if(mediaPlayer == null) {
-            mediaPlayer = MediaPlayer.create(getApplicationContext(), Uri.parse(musicList.get(location).getLocation()));
+        if (!isPaused) {
             mediaPlayer.start();
         }
-        else {
+    }
+
+    void play(int location) {
+        if (mediaPlayer == null) {
+            Toast.makeText(getBaseContext(), "Choose the song to play", Toast.LENGTH_LONG).show();
+        } else if (isPaused && !isPlaying) {
+            if (songCheck == location) {
+                mediaPlayer.seekTo(playbackLength);
+                mediaPlayer.start();
+                isPlaying = true;
+                isPaused = false;
+            }
+        } else if (!isPaused && !isPlaying) {
             mediaPlayer.release();
             mediaPlayer = MediaPlayer.create(getApplicationContext(), Uri.parse(musicList.get(location).getLocation()));
             mediaPlayer.start();
+            isPlaying = true;
         }
     }
+
 
     void pause(){
         if(mediaPlayer != null){
             mediaPlayer.pause();
+            playbackLength = mediaPlayer.getCurrentPosition();
+            isPaused = true;
+            isPlaying = false;
         }
     }
 

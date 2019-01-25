@@ -55,22 +55,26 @@ public class MainActivity extends AppCompatActivity {
             location = song.getId();
             if(!isPlaying){
                 play.setImageDrawable(getDrawable(R.mipmap.ic_play_foreground));
+                sendMessage(PlayMusicService.CHOOSE_SONG, location);
             }
             else{
-                Message message = new Message();
-                message.what = PlayMusicService.PLAY_MUSIC;
                 play.setImageDrawable(getDrawable(R.mipmap.ic_pause_foreground));
-                message.arg1 = location;
-                try {
-                    mes.send(message);
-                    isPlaying = true;
-                }
-                catch (RemoteException e) {
-                        e.printStackTrace();
-                }
+                sendMessage(PlayMusicService.PLAY_MUSIC, location);
             }
         }
     };
+
+    private void sendMessage(int order, int location) {
+        Message message = new Message();
+        message.what = order;
+        message.arg1 = location;
+        try {
+            mes.send(message);
+        }catch (RemoteException e) {
+            e.printStackTrace();
+        }
+    }
+
     private ServiceConnection serviceConnection = new ServiceConnection() {
         @Override
         public void onServiceConnected(ComponentName name, IBinder service) {
@@ -173,62 +177,34 @@ public class MainActivity extends AppCompatActivity {
     private void playMusic(){
         if(isBound) {
             if (!isPlaying) {
-                Message message = new Message();
-                message.what = PlayMusicService.PLAY_MUSIC;
                 play.setImageDrawable(getDrawable(R.mipmap.ic_pause_foreground));
-                message.arg1 = location;
-                try {
-                    mes.send(message);
+                sendMessage(PlayMusicService.PLAY_MUSIC, location);
                     isPlaying = true;
-                } catch (RemoteException e) {
-                    e.printStackTrace();
-                }
             }else{
-                Message message = new Message();
-                message.what = PlayMusicService.PAUSE_MUSIC;
                 play.setImageDrawable(getDrawable(R.mipmap.ic_play_foreground));
-                message.arg1 = location;
-                try {
-                    mes.send(message);
-                    isPlaying = false;
-                } catch (RemoteException e) {
-                    e.printStackTrace();
-                }
+                sendMessage(PlayMusicService.PAUSE_MUSIC, location);
+                isPlaying = false;
 //                    unbindService(serviceConnection);
             }
         }
     }
 
     private void previousSong() {
-        Message message = new Message();
-        message.what = PlayMusicService.PREVIOUS_SONG;
         location--;
         if(location < 0) {
             location = songList.size() - 1;
         }
-        message.arg1 = location;
-        try {
-            mes.send(message);
-            isPlaying = true;
-        } catch (RemoteException e) {
-            e.printStackTrace();
+        if(PlayMusicService.isPaused){
+            sendMessage(PlayMusicService.PREVIOUS_SONG, location);
         }
     }
 
     private void nextSong() {
-        Message message = new Message();
-        message.what = PlayMusicService.NEXT_SONG;
         location++;
         if(location >= songList.size()) {
             location = 0;
         }
-        message.arg1 = location;
-        try {
-            mes.send(message);
-            isPlaying = true;
-        } catch (RemoteException e) {
-            e.printStackTrace();
-        }
+        sendMessage(PlayMusicService.NEXT_SONG, location);
     }
 
     public void setSongList(){
