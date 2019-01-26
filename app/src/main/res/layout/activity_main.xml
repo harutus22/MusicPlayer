@@ -10,8 +10,24 @@
     <android.support.v7.widget.RecyclerView
         android:id="@+id/songsView"
         android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+    </android.support.v7.widget.RecyclerView>
+
+    <LinearLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        />
+        android:orientation="vertical"
+        app:layout_constraintBottom_toTopOf="@id/buttonsLayout">
+
+
+        <SeekBar
+            android:id="@+id/playBack"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@color/colorPrimaryDark"
+            android:layout_gravity="center"/>
+    </LinearLayout>
 
 
     <LinearLayout

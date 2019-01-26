@@ -27,6 +27,7 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.View;
+import android.widget.SeekBar;
 
 import com.example.apple.musicplayer.R;
 import com.example.apple.musicplayer.adapter.MusicAdapter;
@@ -49,6 +50,7 @@ public class MainActivity extends AppCompatActivity {
     private boolean isBound = false;
     private FloatingActionButton play, next, previous;
     private int location;
+    private SeekBar seekBar;
     private MusicAdapter.OnItemSelectedListener onItemSelected = new MusicAdapter.OnItemSelectedListener() {
         @Override
         public void onItemSelected(Song song) {
@@ -61,17 +63,6 @@ public class MainActivity extends AppCompatActivity {
             }
         }
     };
-
-    private void sendMessage(int order, int location) {
-        Message message = new Message();
-        message.what = order;
-        message.arg1 = location;
-        try {
-            mes.send(message);
-        }catch (RemoteException e) {
-            e.printStackTrace();
-        }
-    }
 
     private ServiceConnection serviceConnection = new ServiceConnection() {
         @Override
@@ -113,6 +104,7 @@ public class MainActivity extends AppCompatActivity {
         play = findViewById(R.id.btnPlay);
         next = findViewById(R.id.btnNext);
         previous = findViewById(R.id.btnPrevious);
+        seekBar = findViewById(R.id.playBack);
         play.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -129,6 +121,22 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 previousSong();
+            }
+        });
+        seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+
+            }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+                
             }
         });
     }
@@ -210,6 +218,17 @@ public class MainActivity extends AppCompatActivity {
         try {
             mes.send(message);
         } catch (RemoteException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void sendMessage(int order, int location) {
+        Message message = new Message();
+        message.what = order;
+        message.arg1 = location;
+        try {
+            mes.send(message);
+        }catch (RemoteException e) {
             e.printStackTrace();
         }
     }

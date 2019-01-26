@@ -14,7 +14,6 @@ import android.widget.Toast;
 import com.example.apple.musicplayer.song.Song;
 
 import java.util.ArrayList;
-import java.util.List;
 
 
 public class PlayMusicService  extends IntentService {
@@ -26,7 +25,7 @@ public class PlayMusicService  extends IntentService {
     public static final int PREVIOUS_SONG = 10;
     public static final int CHOOSE_SONG = 11;
 
-    private MediaPlayer mediaPlayer;
+    public static MediaPlayer mediaPlayer;
     private int playbackLength;
     private boolean isPlaying = false;
     private Messenger messenger = new Messenger(new PlayerHandler());
